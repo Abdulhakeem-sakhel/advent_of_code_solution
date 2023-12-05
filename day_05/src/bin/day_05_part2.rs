@@ -96,7 +96,7 @@ fn get_range_map(soil_almanac: &str, slice_start:&str, slice_end: &str) -> Vec<R
 }
 
 fn get_min_location_from_seeds(soil_almanac: &str ) -> usize{
-    let seeds: Vec<usize> = get_seeds(soil_almanac, _SEEDS, _SEED_TO_SOIL);
+    
     //println!("{:?}", seeds);
     let seed_to_soil_map:Vec<RangeMap>  = get_range_map(soil_almanac, _SEED_TO_SOIL, _SOIL_TO_FERTILIZER);
     let soil_to_fertilizer_map:Vec<RangeMap>  = get_range_map(soil_almanac, _SOIL_TO_FERTILIZER, _FERTILIZER_TO_WATER);
@@ -105,21 +105,37 @@ fn get_min_location_from_seeds(soil_almanac: &str ) -> usize{
     let light_to_temperature_map: Vec<RangeMap>  = get_range_map(soil_almanac, _LIGHT_TO_TEMPERATURE, _TEMPERATURE_TO_HUMIDITY);
     let temperature_to_humidity_map: Vec<RangeMap> = get_range_map(soil_almanac, _TEMPERATURE_TO_HUMIDITY, _HUMIDITY_TO_LOCATION);
     let humidity_to_location_map: Vec<RangeMap> = get_range_map(soil_almanac, _HUMIDITY_TO_LOCATION, "");
- 
-    return  seeds
-        .iter()
-        .map(|seed: &usize| -> usize {
-            let soil: usize = get_dest_range_map_vec(&seed_to_soil_map, *seed);
+    
+    let seeds_range: Vec<usize> = get_seeds(soil_almanac, _SEEDS, _SEED_TO_SOIL);
+    let mut min:usize = usize::MAX;
+    let mut seeds_ran: Vec<(usize, usize)>  = Vec::new();
+
+    for  i in 0..seeds_range.len() {
+        if i%2 ==0 && i + 1 < seeds_range.len() {
+            seeds_ran.push((seeds_range[i], seeds_range[i+1]));
+        }
+    } 
+
+    for i in 0..seeds_ran.len() {
+        let start_seed = seeds_ran[i].0;
+        let range = seeds_ran[i].1;
+        for j in 0..range {
+            let seed = start_seed + j;
+            let soil: usize = get_dest_range_map_vec(&seed_to_soil_map, seed);
             let fertilizer: usize = get_dest_range_map_vec(&soil_to_fertilizer_map, soil);
             let water: usize = get_dest_range_map_vec(&fertilizer_to_water_map, fertilizer);
             let light: usize = get_dest_range_map_vec(&water_to_light_map, water);
             let temperature: usize = get_dest_range_map_vec(&light_to_temperature_map, light);
             let humidity: usize = get_dest_range_map_vec(&temperature_to_humidity_map, temperature);
             let location: usize = get_dest_range_map_vec(&humidity_to_location_map, humidity);
-            return location;
-        })
-        .min()
-        .unwrap();
+            if location < min {
+                min = location;
+                println!("found a new min");
+            }
+        }
+    }
+
+    return min;
 }
 
 #[cfg(test)]
@@ -161,6 +177,6 @@ temperature-to-humidity map:
 humidity-to-location map:
 60 56 37
 56 93 4";
-       assert_eq!(35, get_min_location_from_seeds(soil_almanac));
+       assert_eq!(46, get_min_location_from_seeds(soil_almanac));
     }
 }
