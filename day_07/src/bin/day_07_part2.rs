@@ -59,7 +59,7 @@ fn get_hand_type(hand: &Hand) -> HandType {
         if j_count == 5 {
             card_map.insert('J', 5);
         } else {
-            let mut max_card = 
+            let max_card = 
             card_map.iter()
                 .max_by(|a, b| u16::cmp(a.1, b.1))
                 .unwrap();

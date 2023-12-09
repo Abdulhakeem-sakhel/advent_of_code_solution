@@ -37,7 +37,7 @@ fn get_number(matrix: &Vec<Vec<char>>, i: usize, j: usize) -> usize {
 
 fn sum_engine_schematic(engine_schematic: &str) -> usize {
     let mut sum: usize = 0;
-    let mut matrix: Vec<Vec<char>> = 
+    let matrix: Vec<Vec<char>> = 
     engine_schematic
         .lines()
         .map(|line| {

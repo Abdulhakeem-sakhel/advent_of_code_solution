@@ -1,4 +1,4 @@
-use std::{fs, fmt::format, usize};
+use std::{fs, usize};
 fn main() {
     let file_path = "input.txt";
     let contents = fs::read_to_string(file_path)
