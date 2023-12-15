@@ -42,20 +42,45 @@ fn get_network(network: &str) -> HashMap<&str, (&str, &str)> {
     return network_map;
 }
 
+fn get_node_ends_A<'a>(network_map: &'a HashMap<&'a str, (&'a str, &'a str)>) -> Vec<&'a str> {
+    network_map.keys()
+        .filter(|node| node.ends_with("A"))
+        .map(|node| *node)
+        .collect()
+}
+
 fn number_of_steps(instructions: &str, network_map: HashMap<&str, (&str, &str)>) -> usize {
     let mut steps_number: usize = 0;
     let instructions_len = instructions.len();
-    let mut current_node = "AAA";
-    while current_node != "ZZZ" {
+    let mut current_nodes = get_node_ends_A(&network_map);
+    loop {
         let current_move: char = instructions.chars().nth(steps_number % instructions_len).unwrap();
-        current_node = match current_move {
-            'R' => network_map.get(current_node).unwrap().1,
-            'L' => network_map.get(current_node).unwrap().0,
-            ins => panic!("i get an unexpected instructions !!!! ({ins})"),
-        };
+        
+        for  node in current_nodes.iter_mut() {
+            match current_move {
+                'R' => {
+                    *node =  network_map.get(node).unwrap().1
+                },
+                'L' => {
+                    *node = network_map.get(node).unwrap().0
+                },
+                ins => panic!("i get an unexpected instructions !!!! ({ins})"),
+            };
+        }
         steps_number += 1;
-    }
 
+        let mut all_ends_Z = true;
+        for i in 0..current_nodes.len() {
+            if !current_nodes[i].ends_with("Z"){
+                all_ends_Z = false;
+                break;
+            }
+        }
+        if all_ends_Z == true {
+            break;
+        }
+    }
+    println!("{:?}", current_nodes);
     return steps_number;
 }
 
@@ -65,16 +90,22 @@ mod tests {
     #[test]
     fn test() {
         let network = 
-"LLR
+"LR
 
-AAA = (BBB, BBB)
-BBB = (AAA, ZZZ)
-ZZZ = (ZZZ, ZZZ)";
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX))";
         
         let instructions = network.lines().next().unwrap();
         println!("{instructions}");
         let network_map = get_network(network);
         let step = number_of_steps(instructions, network_map);
+        //assert_eq!(true, "11B".ends_with("Z"));
         assert_eq!(6, step);
     }
 }
